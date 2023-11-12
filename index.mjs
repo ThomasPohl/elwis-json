@@ -127,6 +127,24 @@ async function createDistributionJson(examName) {
 
 }
 
-getAllQuestionsData().then(() => {
-    console.log("finished");
-});
+async function  buildIndex(){
+    //CReate a JSON saved in index.html which contains all the exam names and categories with their corresponding github pages url
+    let index = {};
+    for (let examName in questionsData) {
+        index[examName] = {"categories": {}};
+        for (let category in questionsData[examName]) {
+            if (category !== "distribution") {
+                index[examName]["categories"][category] = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json");
+            } else {
+                index[examName]["distribution"] = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-distribution.json");
+            }
+        }
+    }
+    await fs.writeFile('./data/index.html', JSON.stringify(index));
+    index["fromJson"]=true;
+    await fs.writeFile('./data/index.json', JSON.stringify(index));
+            
+}
+
+await getAllQuestionsData();
+await buildIndex();
