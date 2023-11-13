@@ -1,36 +1,36 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import fs from 'fs/promises'; 
+import fs from 'fs/promises';
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 
 const questionsData = {
     "Sportbootfuehrerscheine Binnen": {
-        "Basisfragen": {"file": "basisfragenBinnen.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Basisfragen/Basisfragen-node.html"},
-        "Spezifische Fragen": {"file": "spezifischeFragenBinnen.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Binnen/Spezifische-Fragen-Binnen-node.html"},
-        "Spezifische Fragen Segeln": {"file": "spezifischeFragenSegeln.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Segeln/Spezifische-Fragen-Segeln-node.html"},
-        "distribution": {"file":"FragenverteilungBinnen.pdf", "url":"https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-Binnen.pdf?__blob=publicationFile&v=3"}
+        "Basisfragen": { "file": "basisfragenBinnen.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Basisfragen/Basisfragen-node.html" },
+        "Spezifische Fragen": { "file": "spezifischeFragenBinnen.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Binnen/Spezifische-Fragen-Binnen-node.html" },
+        "Spezifische Fragen Segeln": { "file": "spezifischeFragenSegeln.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Segeln/Spezifische-Fragen-Segeln-node.html" },
+        "distribution": { "file": "FragenverteilungBinnen.pdf", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-Binnen.pdf?__blob=publicationFile&v=3" }
     },
     "Sportbootfuehrerscheine See": {
-        "Basisfragen": {"file": "basisfragenSee.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Basisfragen/Basisfragen-node.html"},
-        "Spezifische Fragen": {"file": "spezifischeFragenSee.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Spezifische-Fragen-See/Spezifische-Fragen-See-node.html"},
-        "distribution": {"file":"FragenverteilungSee.pdf", "url":"https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-See.pdf?__blob=publicationFile&v=3"}
+        "Basisfragen": { "file": "basisfragenSee.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Basisfragen/Basisfragen-node.html" },
+        "Spezifische Fragen": { "file": "spezifischeFragenSee.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Spezifische-Fragen-See/Spezifische-Fragen-See-node.html" },
+        "distribution": { "file": "FragenverteilungSee.pdf", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-See.pdf?__blob=publicationFile&v=3" }
     },
 };
 
-async function convertToJson(siteContent){
+async function convertToJson(siteContent) {
     const $ = cheerio.load(siteContent);
     const data = [];
     let question = {};
     $('p.wsv-red.line').nextUntil('div.sectionRelated').each((i, el) => {
-        
-        if ($(el).is('p:not([class])')){
+
+        if ($(el).is('p:not([class])')) {
             let tagContent = $(el).text();
             let match = tagContent.match(/\n(\d+)\.(.+)/);
             if (match) {
                 let id = match[1];
                 let text = match[2];
-                question = {id, text}
+                question = { id, text }
             }
         }
         else if ($(el).is('p.picture')) {
@@ -70,7 +70,7 @@ async function getQuestionsData(examName, category) {
     for (let i = 0; i < jsonData.length; i++) {
         if (jsonData[i].imageSrc) {
 
-            jsonData[i].imageSrc = 'data:image/gif;base64,' +  (await downloadAndCache(jsonData[i].imageSrc)).toString('base64');
+            jsonData[i].imageSrc = 'data:image/gif;base64,' + (await downloadAndCache(jsonData[i].imageSrc)).toString('base64');
         }
     }
     await fs.writeFile('./data/' + examName + "-" + category + '.json', JSON.stringify(jsonData));
@@ -83,7 +83,7 @@ async function getAllQuestionsData() {
         for (let category in questionsData[examName]) {
             if (category === "distribution") {
                 await createDistributionJson(examName);
-            } else{
+            } else {
                 promises.push(getQuestionsData(examName, category));
             }
         }
@@ -97,8 +97,8 @@ async function createDistributionJson(examName) {
     //Parse PDF using pdf.js
     const uint8Array = new Uint8Array(data);
 
-    let distributionData = {};
-    
+    let distributionData = [];
+
     const loadingTask = getDocument(uint8Array);
     const pdf = await loadingTask.promise;
     for (let currentPage = 1; currentPage <= pdf.numPages; currentPage++) {
@@ -111,12 +111,12 @@ async function createDistributionJson(examName) {
                 let questionIds = [];
                 let j = i + 1;
                 while (j < content.items.length && (content.items[j].str.match(/^\d+|^\s*/))) {
-                    if (content.items[j].str.match(/^\d+$/)){
+                    if (content.items[j].str.match(/^\d+$/)) {
                         questionIds.push(content.items[j].str);
                     }
                     j++;
                 }
-                distributionData[questionaireNumber] = questionIds;
+                distributionData.push({ "id": questionaireNumber, "questions": questionIds });
             }
         }
     }
@@ -127,23 +127,24 @@ async function createDistributionJson(examName) {
 
 }
 
-async function  buildIndex(){
+async function buildIndex() {
     //CReate a JSON saved in index.html which contains all the exam names and categories with their corresponding github pages url
-    let index = {};
+    let index = [];
     for (let examName in questionsData) {
-        index[examName] = {"categories": {}};
+        let exam = {"name": examName, "categories": []};
         for (let category in questionsData[examName]) {
             if (category !== "distribution") {
-                index[examName]["categories"][category] = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json");
+                exam.categories.push({"name": category, "url": "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json")});
             } else {
-                index[examName]["distribution"] = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-distribution.json");
+                exam.distribution = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-distribution.json");
             }
         }
+        index.push(exam);
     }
     await fs.writeFile('./data/index.html', JSON.stringify(index));
-    index["fromJson"]=true;
+    index["fromJson"] = true;
     await fs.writeFile('./data/index.json', JSON.stringify(index));
-            
+
 }
 
 await getAllQuestionsData();
