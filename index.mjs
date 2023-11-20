@@ -6,49 +6,143 @@ import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const questionsData = {
     "Sportbootfuehrerscheine Binnen": {
-        "Basisfragen": { "file": "basisfragenBinnen.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Basisfragen/Basisfragen-node.html" },
-        "Spezifische Fragen": { "file": "spezifischeFragenBinnen.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Binnen/Spezifische-Fragen-Binnen-node.html" },
-        "Spezifische Fragen Segeln": { "file": "spezifischeFragenSegeln.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Segeln/Spezifische-Fragen-Segeln-node.html" },
-        "distribution": { "file": "FragenverteilungBinnen.pdf", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-Binnen.pdf?__blob=publicationFile&v=3" }
+        "type": "SBF",
+        "questions": {
+            "Basisfragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Basisfragen/Basisfragen-node.html" },
+            "Spezifische Fragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Binnen/Spezifische-Fragen-Binnen-node.html" },
+            "Spezifische Fragen Segeln": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Segeln/Spezifische-Fragen-Segeln-node.html" }
+        },
+        "distribution": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-Binnen.pdf?__blob=publicationFile&v=3" }
     },
     "Sportbootfuehrerscheine See": {
-        "Basisfragen": { "file": "basisfragenSee.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Basisfragen/Basisfragen-node.html" },
-        "Spezifische Fragen": { "file": "spezifischeFragenSee.html", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Spezifische-Fragen-See/Spezifische-Fragen-See-node.html" },
-        "distribution": { "file": "FragenverteilungSee.pdf", "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-See.pdf?__blob=publicationFile&v=3" }
+        "type": "SBF",
+        "questions": {
+            "Basisfragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Basisfragen/Basisfragen-node.html" },
+            "Spezifische Fragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Spezifische-Fragen-See/Spezifische-Fragen-See-node.html" }
+        },
+        "distribution": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenverteilung-See.pdf?__blob=publicationFile&v=3" }
     },
+    "Sportküstenschifferschein (SKS)": {
+        "type": "SBF",
+        "questions": {
+            "Navigation": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Navigation/Navigation-node.html" },
+            "Schifffahrtsrecht": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Schifffahrtsrecht/Schifffahrtsrecht-node.html" },
+            "Wetterkunde": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Wetterkunde/Wetterkunde-node.html" },
+            "Seemannschaft I": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Seemannschaft-I/Seemannschaft-I-node.html" },
+            "Seemannschaft II": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Seemannschaft-II/Seemannschaft-II-node.html" }
+        }
+    },
+    "Short Range Certificate (SRC)": {
+        "type": "Funk",
+        "questions": {
+            "Fragenkatalog": { "url": "https://elwis.de/DE/Schifffahrtsrecht/Sprechfunkzeugnisse/Fragenkatalog-SRC-2018.pdf?__blob=publicationFile&v=3" }
+        }
+    }
 };
 
-async function convertToJson(siteContent) {
-    const $ = cheerio.load(siteContent);
-    const data = [];
-    let question = {};
-    $('p.wsv-red.line').nextUntil('div.sectionRelated').each((i, el) => {
+async function convertToJson(siteContent, type) {
+    if (type === "SBF") {
+        const $ = cheerio.load(siteContent);
+        const data = [];
+        let question = {};
+        $('p.wsv-red.line').nextUntil('div.sectionRelated').each((i, el) => {
 
-        if ($(el).is('p:not([class])')) {
-            let tagContent = $(el).text();
-            let match = tagContent.match(/\n(\d+)\.(.+)/);
-            if (match) {
-                let id = match[1];
-                let text = match[2];
-                question = { id, text }
+            if ($(el).is('p:not([class])')) {
+                let tagContent = $(el).text();
+                let match = tagContent.match(/\n(\d+)\.(.+)/);
+                if (match) {
+                    let id = match[1];
+                    let text = match[2];
+                    question = { id, text }
+                }
             }
+            else if ($(el).is('p.picture')) {
+                let imgSrc = $(el).find('span img').attr('src');
+                question.imageSrc = imgSrc;
+            } else if ($(el).is('ol')) {
+                let answers = [];
+                $(el).find('li').each((i, el) => {
+                    let answer = $(el).text();
+                    answer = answer.replace(/\n/g, '');
+                    answers.push(answer);
+                });
+                question.answers = answers;
+                data.push(question);
+                question = {};
+            }
+        });
+        return data;
+    } else if (type === "Funk") {
+        console.log("Converting Funk");
+        const skipPatterns = [
+            /^Gesamtfragen.*/,
+            /^Alle Rechte vorbehalten.*/,
+            /^Stand\:.*/
+        ]
+        //Parse as PDF
+        const uint8Array = new Uint8Array(siteContent);
+        const loadingTask = getDocument(uint8Array);
+        const pdf = await loadingTask.promise;
+        const data = [];
+        let question = null;
+        let pdfLines = [];
+        let beforeAnswers = false;
+
+        for (let currentPage = 1; currentPage <= pdf.numPages; currentPage++) {
+            const page = await pdf.getPage(currentPage);
+            const content = await page.getTextContent();
+            for (let i = 0; i < content.items.length; i++) {
+                const item = content.items[i];
+                //Beinhaltet "1."
+                //console.log(item);
+                    //Concat all non EOL lines
+                    let text = item.str;
+                    
+                    if (i < content.items.length && !item.hasEOL) {
+                          i++                        
+                        while (i < content.items.length && !content.items[i].hasEOL) {
+                            //console.log(content.items[j].hasEOL);
+                            text += content.items[i].str;
+                            i++
+                        }
+                    }
+                    pdfLines.push(text);
+                    if (skipPatterns.some((pattern) => text.match(pattern))) {
+                        continue;
+                    }
+
+                    if (text.match(/^\d+\./)){
+                        if (question) {
+                            data.push(question);
+                        }
+                        beforeAnswers = true;
+                        let dotIndex = text.indexOf('.');
+                        question = { id: text.substring(0, dotIndex), text: text.substring(dotIndex + 2).replace(/ \[\d+\]/g, ''), answers: [] };
+                    } else if (text.match(/^\d\)/)) {
+                        beforeAnswers = false;
+                        let braceIndex = text.indexOf(')');
+                        question.answers.push(text.substring(braceIndex + 2));
+                    } else if (beforeAnswers) {
+                        question.text += " " + text.replace(/ ?\[\d+\]/g, '');
+                    } else if (question) {
+                        question.answers[question.answers.length - 1] += " " + text;
+                    }
+
+                
+               
+            }
+            
         }
-        else if ($(el).is('p.picture')) {
-            let imgSrc = $(el).find('span img').attr('src');
-            question.imageSrc = imgSrc;
-        } else if ($(el).is('ol')) {
-            let answers = [];
-            $(el).find('li').each((i, el) => {
-                let answer = $(el).text();
-                answer = answer.replace(/\n/g, '');
-                answers.push(answer);
-            });
-            question.answers = answers;
+        if (question) {
             data.push(question);
-            question = {};
         }
-    });
-    return data;
+        data.forEach((question) => {
+            if (question.answers.length != 4){
+                console.log(question.id);
+            }
+        });
+        return data;
+    }
 }
 
 async function downloadAndCache(src) {
@@ -63,10 +157,11 @@ async function downloadAndCache(src) {
     return await fs.readFile('./cache/' + fileName);
 }
 
-async function getQuestionsData(examName, category) {
+async function getQuestionsData(examName, category, type) {
 
-    let data = await downloadAndCache(questionsData[examName][category].url);
-    let jsonData = await convertToJson(data);
+    console.log("Downloading " + examName + " " + category);
+    let data = await downloadAndCache(questionsData[examName]["questions"][category].url);
+    let jsonData = await convertToJson(data, type);
     for (let i = 0; i < jsonData.length; i++) {
         if (jsonData[i].imageSrc) {
 
@@ -80,12 +175,11 @@ async function getQuestionsData(examName, category) {
 async function getAllQuestionsData() {
     let promises = [];
     for (let examName in questionsData) {
-        for (let category in questionsData[examName]) {
-            if (category === "distribution") {
-                await createDistributionJson(examName);
-            } else {
-                promises.push(getQuestionsData(examName, category));
-            }
+        for (let category in questionsData[examName].questions) {
+            promises.push(getQuestionsData(examName, category, questionsData[examName].type));
+        }
+        if (questionsData[examName].distribution) {
+            await createDistributionJson(examName);
         }
     }
     await Promise.all(promises);
@@ -131,13 +225,12 @@ async function buildIndex() {
     //CReate a JSON saved in index.html which contains all the exam names and categories with their corresponding github pages url
     let index = [];
     for (let examName in questionsData) {
-        let exam = {"name": examName, "categories": []};
-        for (let category in questionsData[examName]) {
-            if (category !== "distribution") {
-                exam.categories.push({"name": category, "url": "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json")});
-            } else {
-                exam.distribution = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-distribution.json");
-            }
+        let exam = { "name": examName, "categories": [] };
+        for (let category in questionsData[examName].questions) {
+            exam.categories.push({ "name": category, "url": "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json") });
+        }
+        if (questionsData[examName].distribution) {
+            exam.distribution = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-distribution.json");
         }
         index.push(exam);
     }
