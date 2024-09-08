@@ -76,7 +76,7 @@ async function buildIndex() {
     //Create a JSON saved in index.html which contains all the exam names and categories with their corresponding github pages url
     let index = [];
     for (let examName in questionsData) {
-        let exam = { "name": examName, "categories": [] };
+        let exam = { "name": examName, "shortName": questionsData[examName].shortName, "categories": [] };
         for (let category in questionsData[examName].questions) {
             exam.categories.push({ "name": category, "url": "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json") });
         }

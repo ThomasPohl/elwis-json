@@ -1,6 +1,7 @@
 const questionsData = {
     "Sportbootfuehrerscheine Binnen": {
         "type": "SBF",
+        "shortName": "SBF Binnen",
         "questions": {
             "Basisfragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Basisfragen/Basisfragen-node.html" },
             "Spezifische Fragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-Binnen/Spezifische-Fragen-Binnen/Spezifische-Fragen-Binnen-node.html" },
@@ -10,6 +11,7 @@ const questionsData = {
     },
     "Sportbootfuehrerscheine See": {
         "type": "SBF",
+        "shortName": "SBF See",
         "questions": {
             "Basisfragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Basisfragen/Basisfragen-node.html" },
             "Spezifische Fragen": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-See/Spezifische-Fragen-See/Spezifische-Fragen-See-node.html" }
@@ -18,6 +20,7 @@ const questionsData = {
     },
     "Sportküstenschifferschein (SKS)": {
         "type": "SBF",
+        "shortName": "SKS",
         "questions": {
             "Navigation": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Navigation/Navigation-node.html" },
             "Schifffahrtsrecht": { "url": "https://www.elwis.de/DE/Sportschifffahrt/Sportbootfuehrerscheine/Fragenkatalog-SKS/Schifffahrtsrecht/Schifffahrtsrecht-node.html" },
@@ -28,11 +31,13 @@ const questionsData = {
     },
     "Short Range Certificate (SRC)": {
         "type": "Funk",
+        "shortName": "SRC",
         "questions": {
             "Fragenkatalog": { "url": "https://elwis.de/DE/Schifffahrtsrecht/Sprechfunkzeugnisse/Fragenkatalog-SRC-2018.pdf?__blob=publicationFile&v=3" }
         }
     },
     "Long Range Certificate (LRC)": {
+        "shortName": "LRC",
         "type": "Funk",
         "questions": {
             "Fragenkatalog": { "url": "https://www.elwis.de/DE/Schifffahrtsrecht/Sprechfunkzeugnisse/Fragenkatalog-LRC-2018.pdf?__blob=publicationFile&v=4" }
@@ -40,6 +45,7 @@ const questionsData = {
     },
     "UKW Sprechfunkzeugnis für den Binnenschifffahrtsfunk (UBI)": {
         "type": "Funk",
+        "shortName": "UBI",
         "questions": {
             "Fragenkatalog": { "url": "https://www.abvt.wsv.de/Webs/WSA/ABVT/DE/SharedDocs/Downloads/UBI_Gesamtfragenkatalog_2023-08-16.pdf?__blob=publicationFile&v=7" }
         },
