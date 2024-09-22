@@ -7,12 +7,12 @@ import { questionsData } from './config.mjs';
 
 
 
-async function convertToJson(siteContent, type) {
+async function convertToJson(siteContent, type, categoryMode) {
     if (type === "SBF") {
         return new SbfParser().getJsonData(siteContent);
        
     } else if (type === "Funk") {
-        return new FunkParser().getJsonData(siteContent);
+        return new FunkParser().getJsonData(siteContent, categoryMode);
     }
 }
 
@@ -28,19 +28,37 @@ async function downloadAndCache(src) {
     return await fs.readFile('./cache/' + fileName);
 }
 
-async function getQuestionsData(examName, category, type) {
+async function getQuestionsData(examName, category) {
 
     console.log("Downloading " + examName + " " + category);
     let data = await downloadAndCache(questionsData[examName]["questions"][category].url);
-    let jsonData = await convertToJson(data, type);
-    for (let i = 0; i < jsonData.length; i++) {
-        if (jsonData[i].imageSrc) {
+    let type = questionsData[examName]["type"];
+    let categoryMode = questionsData[examName]["categoryMode"];
+    let jsonData = await convertToJson(data, type, categoryMode);
+    if (type === "SBF") {
+        for (let i = 0; i < jsonData.length; i++) {
+            if (jsonData[i].imageSrc) {
 
-            jsonData[i].imageSrc = 'data:image/gif;base64,' + (await downloadAndCache(jsonData[i].imageSrc)).toString('base64');
+                jsonData[i].imageSrc = 'data:image/gif;base64,' + (await downloadAndCache(jsonData[i].imageSrc)).toString('base64');
+            }
         }
+        await fs.writeFile('./data/' + questionsData[examName]["shortName"] + "-" + category + '.json', JSON.stringify(jsonData));
+        console.log('The json file ' + questionsData[examName]["shortName"] + "-" + category + '.json has been saved!');
+    } else if (type === "Funk") {
+        questionsData[examName].questions={};
+
+        for (let category in jsonData) {
+            for (let i = 0; i < jsonData[category].length; i++) {
+                if (jsonData[category][i].imageSrc) {
+                    jsonData[category][i].imageSrc = 'data:image/gif;base64,' + (await downloadAndCache(jsonData[i].imageSrc)).toString('base64');
+                }
+            }
+            await fs.writeFile('./data/' + questionsData[examName]["shortName"] + "-" + category + '.json', JSON.stringify(jsonData[category]));
+            console.log('The json file ' + questionsData[examName]["shortName"] + "-" + category + '.json has been saved!');
+            questionsData[examName].questions[category]={};
+        }
+
     }
-    await fs.writeFile('./data/' + examName + "-" + category + '.json', JSON.stringify(jsonData));
-    console.log('The json file ' + examName + "-" + category + '.json has been saved!');
 }
 
 async function getAllQuestionsData() {
@@ -50,7 +68,7 @@ async function getAllQuestionsData() {
             continue;
         }
         for (let category in questionsData[examName].questions) {
-            promises.push(getQuestionsData(examName, category, questionsData[examName].type));
+            promises.push(getQuestionsData(examName, category));
         }
         if (questionsData[examName].distribution) {
             await createDistributionJson(examName);
@@ -66,8 +84,8 @@ async function createDistributionJson(examName) {
 
     let distributionData = new SbfParser().getDistributionJson(data);
 
-    await fs.writeFile('./data/' + examName + "-distribution.json", JSON.stringify(distributionData));
-    console.log('The json file ' + examName + "-distribution.json has been saved!");
+    await fs.writeFile('./data/' + questionsData[examName].shortName + "-distribution.json", JSON.stringify(distributionData));
+    console.log('The json file ' + questionsData[examName].shortName + "-distribution.json has been saved!");
 
 
 }
@@ -78,10 +96,10 @@ async function buildIndex() {
     for (let examName in questionsData) {
         let exam = { "name": examName, "shortName": questionsData[examName].shortName, "categories": [] };
         for (let category in questionsData[examName].questions) {
-            exam.categories.push({ "name": category, "url": "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-" + category + ".json") });
+            exam.categories.push({ "name": category, "url": "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(questionsData[examName]["shortName"] + "-" + category + ".json") });
         }
         if (questionsData[examName].distribution) {
-            exam.distribution = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(examName + "-distribution.json");
+            exam.distribution = "https://thomaspohl.github.io/elwis-json/" + encodeURIComponent(questionsData[examName]["shortName"] + "-distribution.json");
         }
         index.push(exam);
     }

@@ -31,6 +31,7 @@ const questionsData = {
     },
     "Short Range Certificate (SRC)": {
         "type": "Funk",
+        "categoryMode":"idInSuffix",
         "shortName": "SRC",
         "questions": {
             "Fragenkatalog": { "url": "https://elwis.de/DE/Schifffahrtsrecht/Sprechfunkzeugnisse/Fragenkatalog-SRC-2018.pdf?__blob=publicationFile&v=3" }
@@ -38,6 +39,7 @@ const questionsData = {
     },
     "Long Range Certificate (LRC)": {
         "shortName": "LRC",
+        "categoryMode":"idInPrefix",
         "type": "Funk",
         "questions": {
             "Fragenkatalog": { "url": "https://www.elwis.de/DE/Schifffahrtsrecht/Sprechfunkzeugnisse/Fragenkatalog-LRC-2018.pdf?__blob=publicationFile&v=4" }
@@ -45,6 +47,7 @@ const questionsData = {
     },
     "UKW Sprechfunkzeugnis für den Binnenschifffahrtsfunk (UBI)": {
         "type": "Funk",
+        "categoryMode":"inline",
         "shortName": "UBI",
         "questions": {
             "Fragenkatalog": { "url": "https://www.abvt.wsv.de/Webs/WSA/ABVT/DE/SharedDocs/Downloads/UBI_Gesamtfragenkatalog_2023-08-16.pdf?__blob=publicationFile&v=7" }
